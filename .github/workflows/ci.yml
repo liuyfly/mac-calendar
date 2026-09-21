@@ -27,8 +27,20 @@ jobs:
       # Not `swift test`: XCTest and swift-testing ship with full Xcode, and the
       # suite is written to run without them so it also works on a machine that
       # only has the Command Line Tools. See scripts/run_tests.sh.
+      #
+      # Run under several time zones. Every date here is anchored to a calendar
+      # day rather than an instant, and a conversion that only holds in CST
+      # would otherwise pass locally and fail for users elsewhere. The runner
+      # itself is UTC, so a CST-only assumption fails here rather than in the
+      # field. Auckland and New York bracket China from both sides.
       - name: Test
-        run: ./scripts/run_tests.sh
+        run: |
+          set -euo pipefail
+          for zone in UTC Asia/Shanghai America/New_York Pacific/Auckland; do
+            echo "::group::TZ=$zone"
+            TZ="$zone" ./scripts/run_tests.sh
+            echo "::endgroup::"
+          done
 
       - name: Package app
         run: ./scripts/build_app.sh

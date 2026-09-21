@@ -77,8 +77,12 @@ enum LunarConverter {
 
     /// Converts a Gregorian date to its lunar counterpart.
     ///
-    /// The date is interpreted in Asia/Shanghai, matching how the Chinese
-    /// calendar is defined (month boundaries fall at local midnight in China).
+    /// `date` is treated as *the calendar day the user is looking at*, not as
+    /// an absolute instant: its year/month/day are read in the host time zone
+    /// and re-anchored to noon in China. Passing a raw instant — a solar term,
+    /// say — gives the wrong day whenever the host is west of China and the
+    /// instant is near midnight. Convert such instants through a UTC+8
+    /// calendar instead.
     static func lunarDate(from date: Date) -> LunarDate {
         let noon = normalizedToNoon(date)
         let c = chinese.dateComponents([.year, .month, .day, .isLeapMonth], from: noon)

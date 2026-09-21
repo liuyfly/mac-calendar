@@ -394,6 +394,14 @@ func runLeapMonthConsistencyTests() {
     // coefficient or a time zone slip moves a term across a month boundary and
     // breaks the rule.
     TestRunner.suite("Solar terms agree with ICU's leap months, 1900–2100") {
+        // A term is an absolute instant, so it is converted through a UTC+8
+        // calendar directly. `LunarConverter.lunarDate(from:)` must not be used
+        // here: it takes the *local* calendar day a cell represents, which is
+        // the right behaviour for the grid but reads an instant near midnight
+        // as the previous day when the host is west of China.
+        var chinese = Calendar(identifier: .chinese)
+        chinese.timeZone = LunarConverter.timeZone
+
         var offenders: [String] = []
         var checked = 0
 
@@ -401,9 +409,9 @@ func runLeapMonthConsistencyTests() {
             for term in SolarTerms.terms(inYear: year) {
                 guard term.longitude.truncatingRemainder(dividingBy: 30) == 0 else { continue }
                 checked += 1
-                let lunar = LunarConverter.lunarDate(from: term.date)
-                if lunar.isLeapMonth {
-                    offenders.append("\(year) \(term.name) in \(lunar.monthName)")
+                let parts = chinese.dateComponents([.month, .isLeapMonth], from: term.date)
+                if parts.isLeapMonth == true {
+                    offenders.append("\(year) \(term.name) in leap month \(parts.month ?? 0)")
                 }
             }
         }
