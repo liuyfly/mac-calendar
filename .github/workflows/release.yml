@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test
+        run: ./scripts/run_tests.sh
+
+      - name: Package app
+        run: ./scripts/build_app.sh
+
+      # Zipped with ditto so the bundle's symlinks, resource forks and ad-hoc
+      # signature survive; `zip` mangles them and the app fails to launch.
+      - name: Zip
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            dist/MenuBarCalendar.app dist/MenuBarCalendar.zip
+          shasum -a 256 dist/MenuBarCalendar.zip > dist/MenuBarCalendar.zip.sha256
+          cat dist/MenuBarCalendar.zip.sha256
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/MenuBarCalendar.zip
+            dist/MenuBarCalendar.zip.sha256
+          body: |
+            Download `MenuBarCalendar.zip`, unzip it and move the app to `/Applications`.
+
+            The build is ad-hoc signed and **not notarized**, so macOS blocks it
+            on first launch. Either right-click the app and choose **Open**, or:
+
+            ```sh
+            xattr -dr com.apple.quarantine /Applications/MenuBarCalendar.app
+            ```
+          generate_release_notes: true
