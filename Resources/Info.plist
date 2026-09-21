@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>zh_CN</string>
+	<key>CFBundleDisplayName</key>
+	<string>菜单栏日历</string>
 	<key>CFBundleExecutable</key>
 	<string>MenuBarCalendar</string>
 	<key>CFBundleIconFile</key>
@@ -14,17 +16,14 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>MenuBarCalendar</string>
-	<key>CFBundleDisplayName</key>
-	<string>菜单栏日历</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
-	<!-- Menu bar only: no Dock icon, no app switcher entry. -->
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>

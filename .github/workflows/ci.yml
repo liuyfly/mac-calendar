@@ -57,6 +57,31 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :LSUIElement" "$APP/Contents/Info.plist" | grep -q true
           codesign --verify --verbose "$APP"
 
+      # The packaged app has to run on a machine that never built it. v1.0.0
+      # shipped resources that resolved through an absolute path baked in at
+      # build time: present on the build machine, absent everywhere else, so
+      # every local check passed and the release crashed on launch for
+      # everyone. Moving the build tree away reproduces a user's machine.
+      - name: Smoke test the packaged app
+        run: |
+          set -euo pipefail
+          STAGE="$(mktemp -d)"
+          cp -R dist/MenuBarCalendar.app "$STAGE/"
+          mv .build "$STAGE/build-moved"
+
+          "$STAGE/MenuBarCalendar.app/Contents/MacOS/MenuBarCalendar" &
+          PID=$!
+          sleep 6
+          if kill -0 "$PID" 2>/dev/null; then
+            echo "still running after 6s"
+            kill "$PID" 2>/dev/null || true
+            mv "$STAGE/build-moved" .build
+          else
+            mv "$STAGE/build-moved" .build
+            echo "::error::the packaged app exited on launch without its build directory"
+            exit 1
+          fi
+
       - name: Upload app
         uses: actions/upload-artifact@v4
         with:

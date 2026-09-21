@@ -78,19 +78,40 @@ final class HolidayStore {
         merge(feedData: data)
     }
 
-    /// Finds `holidays.json` across the three ways this code runs: a SwiftPM
-    /// build (resource bundle), the packaged `.app` (Contents/Resources), and
-    /// the standalone test runner (explicit path).
+    private static let resourceBundleName = "MenuBarCalendar_MenuBarCalendar.bundle"
+
+    /// Finds `holidays.json` across the three ways this code runs: the packaged
+    /// `.app`, a plain SwiftPM build, and the standalone test runner.
+    ///
+    /// `Bundle.module` is deliberately not used. SwiftPM's generated accessor
+    /// looks only beside `Bundle.main.bundleURL` and at the absolute build
+    /// directory baked in at compile time — inside an `.app` the first misses,
+    /// because resources belong in `Contents/Resources`, and the second points
+    /// at whatever machine did the build. Worse, it calls `fatalError` when
+    /// both miss, so the app dies on launch rather than falling back. On the
+    /// build machine the baked-in path still exists, so this only shows up
+    /// once someone else runs the app.
     private static func bundledFileURL() -> URL? {
-        #if SWIFT_PACKAGE
-        if let url = Bundle.module.url(forResource: "holidays", withExtension: "json") {
-            return url
-        }
-        #endif
         if let path = ProcessInfo.processInfo.environment["MENUBAR_CALENDAR_HOLIDAYS"] {
             return URL(fileURLWithPath: path)
         }
-        return Bundle.main.url(forResource: "holidays", withExtension: "json")
+        // Inside the .app: Contents/Resources/holidays.json.
+        if let url = Bundle.main.url(forResource: "holidays", withExtension: "json") {
+            return url
+        }
+        // A plain SwiftPM build: the generated resource bundle sits next to the
+        // executable.
+        let candidates = [
+            Bundle.main.bundleURL.appendingPathComponent(resourceBundleName),
+            Bundle.main.bundleURL
+                .appendingPathComponent("Contents/Resources", isDirectory: true)
+                .appendingPathComponent(resourceBundleName),
+        ]
+        for candidate in candidates {
+            let file = candidate.appendingPathComponent("holidays.json")
+            if FileManager.default.fileExists(atPath: file.path) { return file }
+        }
+        return nil
     }
 
     private func loadCached() {

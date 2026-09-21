@@ -20,6 +20,28 @@ jobs:
       - name: Package app
         run: ./scripts/build_app.sh
 
+      # Same guard as CI: the app must launch without the build tree present.
+      # Releasing a package that only runs on the build machine is exactly how
+      # v1.0.0 went out broken.
+      - name: Smoke test the packaged app
+        run: |
+          set -euo pipefail
+          STAGE="$(mktemp -d)"
+          cp -R dist/MenuBarCalendar.app "$STAGE/"
+          mv .build "$STAGE/build-moved"
+
+          "$STAGE/MenuBarCalendar.app/Contents/MacOS/MenuBarCalendar" &
+          PID=$!
+          sleep 6
+          if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID" 2>/dev/null || true
+            mv "$STAGE/build-moved" .build
+          else
+            mv "$STAGE/build-moved" .build
+            echo "::error::the packaged app exited on launch; refusing to release"
+            exit 1
+          fi
+
       # Zipped with ditto so the bundle's symlinks, resource forks and ad-hoc
       # signature survive; `zip` mangles them and the app fails to launch.
       - name: Zip
