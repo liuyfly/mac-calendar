@@ -97,9 +97,11 @@ final class StatusItemController: NSObject {
     func showPanel(from button: NSStatusBarButton? = nil) {
         guard let anchor = button ?? statusItem.button else { return }
 
-        // Rebuild before showing: preferences may have changed, and the app can
-        // sit idle across midnight.
-        viewModel.reload()
+        // Every opening starts from the current month with nothing selected,
+        // like the system calendar: paging is a transient look-around, not a
+        // place to come back to. Resetting here also rebuilds the grid, which
+        // picks up preference changes and a date that rolled over while idle.
+        viewModel.goToToday()
         refreshTitle()
 
         let panel = self.panel ?? makePanel()
