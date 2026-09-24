@@ -43,7 +43,9 @@ public struct MonthGridView: View {
                         let index = row * CalendarMonth.columnCount + column
                         if index < model.month.days.count {
                             let day = model.month.days[index]
-                            DayCellView(day: day, isSelected: model.isSelected(day)) {
+                            DayCellView(day: day,
+                                        isSelected: model.isSelected(day),
+                                        agendaCount: model.agendaItems(on: day.date).count) {
                                 model.select(day)
                             }
                         }

@@ -25,6 +25,11 @@ holiday arrangement.
   correct day.
 - **Statutory holidays and make-up workdays** badged 休 / 班, bundled for
   2025–2026 and refreshable from a public feed.
+- **Events and reminders** from the system Calendar and Reminders, read
+  through EventKit: each day shows a count badge (events plus open reminders
+  due that day), and the focused day's items are listed under the grid.
+  Read-only; completed and undated reminders are left out, as are declined
+  invitations. iCloud keeps these stores in sync, so nothing is synced here.
 - **Launch at login**, via `SMAppService` with a LaunchAgent fallback.
 - **Appearance** following the system, or forced light or dark for this app's
   own windows.
@@ -36,7 +41,11 @@ flush against the menu bar.
 ## Requirements
 
 - macOS 14 or later
-- Swift 6 toolchain (the Command Line Tools are enough; Xcode is not required)
+- Swift 6 toolchain. Xcode is not required, but the Command Line Tools 27.0
+  ship without the plugin behind SwiftUI's `@State` macro and fail with
+  "plugin for module 'SwiftUIMacros' not found". With Xcode installed, select
+  it (`sudo xcode-select -s /Applications/Xcode.app`) or prefix commands with
+  `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## Build
 
@@ -74,9 +83,10 @@ formula, which catches a mistyped VSOP87 coefficient.
 
 ```sh
 swiftc -O -parse-as-library -module-name CalendarCore -o /tmp/render \
-  Sources/CalendarCore/{Lunar,Models,Holidays,Views}/*.swift \
+  Sources/CalendarCore/{Lunar,Models,Holidays,Views,Agenda}/*.swift \
   Sources/MenuBarCalendar/Views/*.swift \
   Sources/MenuBarCalendar/LaunchAtLogin.swift \
+  Sources/MenuBarCalendar/EventKitAgendaProvider.swift \
   "Sources/MenuBarCalendar/AppAppearance+AppKit.swift" \
   scripts/render_preview.swift
 MENUBAR_CALENDAR_HOLIDAYS=Sources/CalendarCore/Resources/holidays.json /tmp/render ./docs
@@ -85,7 +95,8 @@ MENUBAR_CALENDAR_HOLIDAYS=Sources/CalendarCore/Resources/holidays.json /tmp/rend
 Everything is compiled into one module named `CalendarCore`, so the app's
 `import CalendarCore` lines only produce an "ignoring import" warning.
 
-Renders the panel off-screen to PNG in both appearances. Note that
+Renders the panel off-screen to PNG in both appearances, plain and with
+made-up events and reminders (`panel-agenda-*.png`). Note that
 `ImageRenderer` cannot draw AppKit-backed controls, so the settings pane
 renders as placeholders — check that one in the running app.
 
@@ -105,6 +116,12 @@ dist/MenuBarCalendar.app/Contents/MacOS/MenuBarCalendar --show-on-launch
 
 Opens the calendar immediately instead of waiting for a click, which makes the
 panel easy to screenshot.
+
+Calendar and Reminders access is requested on the first launch with the
+feature on. The build is ad-hoc signed, and macOS ties the grant to the
+signature, so a rebuilt app may ask again. Access only works from the packaged
+`.app`: the bare `swift build` binary has no usage descriptions, and the
+feature stays off there rather than letting the system terminate it.
 
 ## Data sources
 
@@ -189,6 +206,7 @@ Sources/CalendarCore/         platform independent; no AppKit or UIKit
   Lunar/                      lunar conversion, solar terms, festivals
   Holidays/                   statutory holiday store + bundled data
   Models/                     view model, grid, preferences, title formatting
+  Agenda/                     event/reminder model, per-day grouping, time labels
   Views/                      SwiftUI: month grid and day cell
 Sources/MenuBarCalendar/      the macOS menu bar app
   main.swift                  NSApplication entry point
@@ -197,6 +215,7 @@ Sources/MenuBarCalendar/      the macOS menu bar app
   CalendarPanel.swift         borderless dropdown window
   StatusItemIcon.swift        menu bar template glyph
   LaunchAtLogin.swift         SMAppService, with a LaunchAgent fallback
+  EventKitAgendaProvider.swift  Calendar and Reminders access (read-only)
   AppAppearance+AppKit.swift  applies the light/dark choice to NSApp
   Views/                      SwiftUI: calendar panel, settings
 scripts/

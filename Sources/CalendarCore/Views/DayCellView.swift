@@ -3,6 +3,8 @@ import SwiftUI
 struct DayCellView: View {
     let day: DayInfo
     let isSelected: Bool
+    /// Events plus open reminders on this day; 0 hides the badge.
+    var agendaCount: Int = 0
     let action: () -> Void
 
     private var isHighlighted: Bool { day.isToday || isSelected }
@@ -24,6 +26,7 @@ struct DayCellView: View {
         .offset(y: 2)
         .background(background)
         .overlay(alignment: .topTrailing) { badge }
+        .overlay(alignment: .topLeading) { agendaBadge }
         .contentShape(Rectangle())
         .onTapGesture(perform: action)
         .opacity(day.isInDisplayedMonth ? 1 : 0.45)
@@ -53,6 +56,21 @@ struct DayCellView: View {
             badgeLabel("班", color: .secondary)
         case nil:
             EmptyView()
+        }
+    }
+
+    /// The count sits opposite the 休 / 班 badge. On today's filled cell it
+    /// inverts, since an accent badge would vanish into the accent background.
+    @ViewBuilder
+    private var agendaBadge: some View {
+        if agendaCount > 0 {
+            Text(agendaCount > 99 ? "99+" : "\(agendaCount)")
+                .font(.system(size: 7.5, weight: .bold).monospacedDigit())
+                .foregroundStyle(day.isToday ? Color.accentColor : .white)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 0.5)
+                .background(Capsule().fill(day.isToday ? Color.white : Color.accentColor))
+                .padding(1.5)
         }
     }
 
@@ -103,6 +121,7 @@ struct DayCellView: View {
     }
 
     private var accessibilityText: String {
-        "\(day.gregorianDay)日 \(day.detailLine)"
+        let agenda = agendaCount > 0 ? " \(agendaCount) 项日程" : ""
+        return "\(day.gregorianDay)日 \(day.detailLine)\(agenda)"
     }
 }

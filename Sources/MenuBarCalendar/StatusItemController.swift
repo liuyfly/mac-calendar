@@ -5,7 +5,7 @@ import SwiftUI
 /// Owns the status bar item, the calendar panel and the settings window.
 final class StatusItemController: NSObject {
     private let statusItem: NSStatusItem
-    private let viewModel = CalendarViewModel()
+    private let viewModel = CalendarViewModel(agendaProvider: EventKitAgendaProvider.shared)
     private var panel: CalendarPanel?
     private var settingsWindow: NSWindow?
     private var midnightTimer: Timer?
@@ -23,6 +23,10 @@ final class StatusItemController: NSObject {
         configureStatusItem()
         observeDayChanges()
         refreshTitle()
+
+        EventKitAgendaProvider.shared.onChange = { [weak self] in
+            self?.viewModel.refreshAgenda()
+        }
     }
 
     deinit {
@@ -68,7 +72,7 @@ final class StatusItemController: NSObject {
     // MARK: - Panel
 
     private func makePanel() -> CalendarPanel {
-        let hosting = NSHostingView(
+        let hosting = PanelHostingView(
             rootView: CalendarPanelView(model: viewModel) { [weak self] in
                 self?.openSettings()
             }
@@ -76,7 +80,10 @@ final class StatusItemController: NSObject {
         // Let the SwiftUI content drive the size; a fixed guess squashes the
         // header.
         hosting.setFrameSize(hosting.fittingSize)
-        return CalendarPanel(contentView: hosting)
+        let panel = CalendarPanel(contentView: hosting)
+        // The day list grows and shrinks with the focused day's items.
+        hosting.onIntrinsicSizeChange = { [weak panel] in panel?.fitContent() }
+        return panel
     }
 
     private func togglePanel(_ sender: NSStatusBarButton) {
@@ -110,6 +117,11 @@ final class StatusItemController: NSObject {
         panel.position(below: anchor)
         panel.makeKeyAndOrderFront(nil)
         startWatchingForOutsideClicks()
+    }
+
+    /// Refetches events and reminders, e.g. once access has been granted.
+    func refreshAgenda() {
+        viewModel.refreshAgenda()
     }
 
     func closePanel() {
@@ -251,5 +263,18 @@ final class StatusItemController: NSObject {
         timer.tolerance = 30
         RunLoop.main.add(timer, forMode: .common)
         midnightTimer = timer
+    }
+}
+
+/// Reports when the SwiftUI content changes its natural size, which a plain
+/// `NSHostingView` does not do for a window it does not own the sizing of.
+private final class PanelHostingView<Content: View>: NSHostingView<Content> {
+    var onIntrinsicSizeChange: (() -> Void)?
+
+    override func invalidateIntrinsicContentSize() {
+        super.invalidateIntrinsicContentSize()
+        // Deferred: the new size is only measurable once this layout pass is
+        // over.
+        DispatchQueue.main.async { [weak self] in self?.onIntrinsicSizeChange?() }
     }
 }
