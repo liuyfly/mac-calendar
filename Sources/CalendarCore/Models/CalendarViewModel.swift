@@ -3,9 +3,9 @@ import Combine
 
 /// Drives the popover: which month is on screen, which day is selected, and the
 /// footer text.
-final class CalendarViewModel: ObservableObject {
-    @Published private(set) var month: CalendarMonth
-    @Published private(set) var selectedDate: Date?
+public final class CalendarViewModel: ObservableObject {
+    @Published public private(set) var month: CalendarMonth
+    @Published public private(set) var selectedDate: Date?
 
     private var today: Date
 
@@ -15,14 +15,14 @@ final class CalendarViewModel: ObservableObject {
         return c
     }()
 
-    init(today: Date = Date()) {
+    public init(today: Date = Date()) {
         self.today = today
         self.month = .current(today: today)
     }
 
     // MARK: - Navigation
 
-    func step(_ delta: Int) {
+    public func step(_ delta: Int) {
         let base = calendar.date(from: DateComponents(year: month.year, month: month.month, day: 1))
         guard let base, let moved = calendar.date(byAdding: .month, value: delta, to: base) else {
             return
@@ -37,20 +37,20 @@ final class CalendarViewModel: ObservableObject {
         month = .make(year: year, month: m, today: today)
     }
 
-    func goToToday() {
+    public func goToToday() {
         today = Date()
         selectedDate = nil
         month = .current(today: today)
     }
 
     /// Rebuilds the grid, e.g. after preferences change or the date rolls over.
-    func reload() {
+    public func reload() {
         let year = month.year, m = month.month
         today = Date()
         month = .make(year: year, month: m, today: today)
     }
 
-    func select(_ day: DayInfo) {
+    public func select(_ day: DayInfo) {
         // A day borrowed from the previous or next month is a navigation
         // affordance: clicking 8/31 or 10/1 from September's grid moves to that
         // month, with the clicked day selected so it stays visible.
@@ -67,7 +67,7 @@ final class CalendarViewModel: ObservableObject {
         }
     }
 
-    func isSelected(_ day: DayInfo) -> Bool {
+    public func isSelected(_ day: DayInfo) -> Bool {
         guard let selected = selectedDate else { return false }
         return sameDay(selected, day.date)
     }
@@ -87,7 +87,7 @@ final class CalendarViewModel: ObservableObject {
         return month.days.first(where: \.isInDisplayedMonth)
     }
 
-    var footerTitle: String {
+    public var footerTitle: String {
         guard let day = focusedDay else { return "" }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .current
@@ -97,7 +97,7 @@ final class CalendarViewModel: ObservableObject {
         return "\(parts.year ?? 0)年\(parts.month ?? 0)月\(parts.day ?? 0)日 星期\(weekday)"
     }
 
-    var footerDetail: String {
+    public var footerDetail: String {
         guard let day = focusedDay else { return "" }
         var parts = [day.detailLine]
 

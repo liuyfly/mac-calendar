@@ -2,8 +2,8 @@ import Foundation
 import Combine
 
 /// User settings, backed by `UserDefaults`.
-final class Preferences: ObservableObject {
-    static let shared = Preferences()
+public final class Preferences: ObservableObject {
+    public static let shared = Preferences()
 
     private enum Key {
         static let appearance = "appearance"
@@ -16,7 +16,7 @@ final class Preferences: ObservableObject {
     }
 
     /// Placeholders accepted in `statusBarFormat`.
-    static let formatTokens: [(token: String, description: String)] = [
+    public static let formatTokens: [(token: String, description: String)] = [
         ("{M}", "月份"),
         ("{d}", "日"),
         ("{周}", "星期"),
@@ -26,15 +26,15 @@ final class Preferences: ObservableObject {
         ("{生肖}", "生肖"),
     ]
 
-    static let defaultFormat = "{M}月{d}日 {周}"
+    public static let defaultFormat = "{M}月{d}日 {周}"
 
     /// What the status item shows.
-    enum StatusBarStyle: String, CaseIterable {
+    public enum StatusBarStyle: String, CaseIterable {
         case icon
         case text
         case both
 
-        var label: String {
+        public var label: String {
             switch self {
             case .icon: return "图标"
             case .text: return "文字"
@@ -42,8 +42,8 @@ final class Preferences: ObservableObject {
             }
         }
 
-        var showsIcon: Bool { self != .text }
-        var showsText: Bool { self != .icon }
+        public var showsIcon: Bool { self != .text }
+        public var showsText: Bool { self != .icon }
     }
 
     private let defaults = UserDefaults.standard
@@ -59,11 +59,11 @@ final class Preferences: ObservableObject {
         ])
     }
 
-    @Published var revision = 0
+    @Published public var revision = 0
 
     private func bump() { revision &+= 1 }
 
-    var appearance: AppAppearance {
+    public var appearance: AppAppearance {
         get {
             guard let raw = defaults.string(forKey: Key.appearance),
                   let value = AppAppearance(rawValue: raw) else { return .system }
@@ -72,7 +72,7 @@ final class Preferences: ObservableObject {
         set { defaults.set(newValue.rawValue, forKey: Key.appearance); bump() }
     }
 
-    var statusBarStyle: StatusBarStyle {
+    public var statusBarStyle: StatusBarStyle {
         get {
             guard let raw = defaults.string(forKey: Key.statusBarStyle),
                   let style = StatusBarStyle(rawValue: raw) else { return .icon }
@@ -81,27 +81,27 @@ final class Preferences: ObservableObject {
         set { defaults.set(newValue.rawValue, forKey: Key.statusBarStyle); bump() }
     }
 
-    var statusBarFormat: String {
+    public var statusBarFormat: String {
         get { defaults.string(forKey: Key.statusBarFormat) ?? Self.defaultFormat }
         set { defaults.set(newValue, forKey: Key.statusBarFormat); bump() }
     }
 
-    var weekStartsOnMonday: Bool {
+    public var weekStartsOnMonday: Bool {
         get { defaults.bool(forKey: Key.weekStartsOnMonday) }
         set { defaults.set(newValue, forKey: Key.weekStartsOnMonday); bump() }
     }
 
-    var showSolarTerms: Bool {
+    public var showSolarTerms: Bool {
         get { defaults.bool(forKey: Key.showSolarTerms) }
         set { defaults.set(newValue, forKey: Key.showSolarTerms); bump() }
     }
 
-    var showHolidayBadges: Bool {
+    public var showHolidayBadges: Bool {
         get { defaults.bool(forKey: Key.showHolidayBadges) }
         set { defaults.set(newValue, forKey: Key.showHolidayBadges); bump() }
     }
 
-    var holidayDataUpdatedAt: Date? {
+    public var holidayDataUpdatedAt: Date? {
         get { defaults.object(forKey: Key.holidayDataUpdatedAt) as? Date }
         set { defaults.set(newValue, forKey: Key.holidayDataUpdatedAt); bump() }
     }

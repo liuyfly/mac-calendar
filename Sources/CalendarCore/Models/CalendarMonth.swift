@@ -3,25 +3,25 @@ import Foundation
 /// A 6 x 7 grid of days for one month, padded with the tail of the previous
 /// month and the head of the next so every month occupies the same height and
 /// the popover never resizes as you page through.
-struct CalendarMonth {
-    let year: Int
-    let month: Int
-    let days: [DayInfo]
+public struct CalendarMonth {
+    public let year: Int
+    public let month: Int
+    public let days: [DayInfo]
     /// Column headers, already rotated for the user's week start.
-    let weekdaySymbols: [String]
+    public let weekdaySymbols: [String]
     /// Lunar months the displayed grid spans, e.g. "八月" or "七月—八月".
-    let lunarMonthSummary: String
+    public let lunarMonthSummary: String
     /// Sexagenary year and zodiac of the displayed month, e.g. "丙午 马年".
-    let yearSummary: String
+    public let yearSummary: String
 
-    static let rowCount = 6
-    static let columnCount = 7
+    public static let rowCount = 6
+    public static let columnCount = 7
 
     private static let mondayFirstSymbols = ["一", "二", "三", "四", "五", "六", "日"]
     private static let sundayFirstSymbols = ["日", "一", "二", "三", "四", "五", "六"]
 
     /// Builds the grid for `year`/`month`.
-    static func make(year: Int,
+    public static func make(year: Int,
                      month: Int,
                      today: Date = Date(),
                      preferences: Preferences = .shared) -> CalendarMonth {
@@ -77,7 +77,7 @@ struct CalendarMonth {
         return result
     }
 
-    static func current(today: Date = Date()) -> CalendarMonth {
+    public static func current(today: Date = Date()) -> CalendarMonth {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .current
         let parts = calendar.dateComponents([.year, .month], from: today)

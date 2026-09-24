@@ -1,4 +1,3 @@
-import AppKit
 import Foundation
 
 func runLunarTests() {
@@ -229,10 +228,9 @@ func runCalendarMonthTests() {
 }
 
 func runPreferenceTests() {
-    TestRunner.suite("AppAppearance — maps to NSAppearance") {
-        expect(AppAppearance.system.nsAppearance == nil, "system means: do not override")
-        expect(AppAppearance.light.nsAppearance?.name == .aqua)
-        expect(AppAppearance.dark.nsAppearance?.name == .darkAqua)
+    // The NSAppearance mapping lives in the macOS app; only the stored choice
+    // is platform independent.
+    TestRunner.suite("AppAppearance — cases and stored values") {
         expectEqual(AppAppearance.allCases.count, 3)
         // Raw values are persisted, so they must stay stable.
         expectEqual(AppAppearance.allCases.map(\.rawValue), ["system", "light", "dark"])

@@ -64,7 +64,7 @@ xattr -dr com.apple.quarantine /Applications/MenuBarCalendar.app
 `swift test` is not used: XCTest and swift-testing ship with full Xcode, not
 with the Command Line Tools. The tests are compiled directly against the
 sources instead, with a small assertion harness in
-`Tests/MenuBarCalendarTests/TestSupport.swift`.
+`Tests/CalendarCoreTests/TestSupport.swift`.
 
 The solar term tests check against published instants from the Purple Mountain
 Observatory and cross-check every term against an independent low-accuracy
@@ -73,11 +73,17 @@ formula, which catches a mistyped VSOP87 coefficient.
 ## Preview rendering
 
 ```sh
-swiftc -O -parse-as-library -o /tmp/render \
-  Sources/MenuBarCalendar/{Lunar,Models,Holidays,Views}/*.swift \
+swiftc -O -parse-as-library -module-name CalendarCore -o /tmp/render \
+  Sources/CalendarCore/{Lunar,Models,Holidays,Views}/*.swift \
+  Sources/MenuBarCalendar/Views/*.swift \
+  Sources/MenuBarCalendar/LaunchAtLogin.swift \
+  "Sources/MenuBarCalendar/AppAppearance+AppKit.swift" \
   scripts/render_preview.swift
-MENUBAR_CALENDAR_HOLIDAYS=Sources/MenuBarCalendar/Resources/holidays.json /tmp/render ./docs
+MENUBAR_CALENDAR_HOLIDAYS=Sources/CalendarCore/Resources/holidays.json /tmp/render ./docs
 ```
+
+Everything is compiled into one module named `CalendarCore`, so the app's
+`import CalendarCore` lines only produce an "ignoring import" warning.
 
 Renders the panel off-screen to PNG in both appearances. Note that
 `ImageRenderer` cannot draw AppKit-backed controls, so the settings pane
@@ -179,16 +185,20 @@ style, hovering the status item shows the full date as a tooltip.
 ## Layout
 
 ```
-Sources/MenuBarCalendar/
+Sources/CalendarCore/         platform independent; no AppKit or UIKit
+  Lunar/                      lunar conversion, solar terms, festivals
+  Holidays/                   statutory holiday store + bundled data
+  Models/                     view model, grid, preferences, title formatting
+  Views/                      SwiftUI: month grid and day cell
+Sources/MenuBarCalendar/      the macOS menu bar app
   main.swift                  NSApplication entry point
   AppDelegate.swift
   StatusItemController.swift  status item, panel, settings window, day rollover
   CalendarPanel.swift         borderless dropdown window
   StatusItemIcon.swift        menu bar template glyph
-  Views/                      SwiftUI: calendar panel, day cell, settings
-  Models/                     view model, grid, preferences, title formatting
-  Lunar/                      lunar conversion, solar terms, festivals
-  Holidays/                   statutory holiday store + bundled data
+  LaunchAtLogin.swift         SMAppService, with a LaunchAgent fallback
+  AppAppearance+AppKit.swift  applies the light/dark choice to NSApp
+  Views/                      SwiftUI: calendar panel, settings
 scripts/
   build_app.sh                SwiftPM build + bundle assembly + ad-hoc signing
   run_tests.sh                standalone test runner
@@ -202,7 +212,9 @@ scripts/
 solar term and holiday logic is covered; the views and the status item
 controller are not, so UI changes are checked by running the app.
 
-New model or lunar sources are picked up by the test runner automatically. If a
+Code that does not need AppKit belongs in `Sources/CalendarCore`, which is
+meant to be shared with an iOS app; it must not import AppKit or UIKit. New
+sources there are picked up by the test runner automatically. If a
 change touches `VSOP87.swift`, note that the suite cross-checks every term two
 independent ways — a single mistyped coefficient will fail the run.
 

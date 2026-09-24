@@ -1,10 +1,10 @@
 import Foundation
 
 /// Renders the status bar title from the user's template.
-enum StatusBarFormatter {
+public enum StatusBarFormatter {
     private static let weekdayNames = ["日", "一", "二", "三", "四", "五", "六"]
 
-    static func render(template: String, date: Date = Date()) -> String {
+    public static func render(template: String, date: Date = Date()) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .current
         let parts = calendar.dateComponents([.year, .month, .day, .weekday], from: date)

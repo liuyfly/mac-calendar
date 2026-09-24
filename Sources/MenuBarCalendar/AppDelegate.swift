@@ -1,4 +1,5 @@
 import AppKit
+import CalendarCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItemController: StatusItemController?

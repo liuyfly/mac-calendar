@@ -3,17 +3,17 @@ import Foundation
 /// A date in the Chinese lunisolar calendar, resolved through the system's
 /// `Calendar(identifier: .chinese)` (ICU), plus the Chinese display names that
 /// Foundation does not provide.
-struct LunarDate: Equatable {
+public struct LunarDate: Equatable {
     /// Sexagenary (60-year cycle) ordinal, 1...60. 1 == 甲子.
-    let cyclicYear: Int
+    public let cyclicYear: Int
     /// 1...12, where 1 is 正月. A leap month repeats the previous month's number.
-    let month: Int
+    public let month: Int
     /// 1...30.
-    let day: Int
+    public let day: Int
     /// True when this is an intercalary month (闰月).
-    let isLeapMonth: Bool
+    public let isLeapMonth: Bool
     /// Number of days in this lunar month, 29 (小月) or 30 (大月).
-    let daysInMonth: Int
+    public let daysInMonth: Int
 
     static let heavenlyStems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"]
     static let earthlyBranches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"]
@@ -26,39 +26,39 @@ struct LunarDate: Equatable {
     ]
 
     /// e.g. "丙午"
-    var stemBranch: String {
+    public var stemBranch: String {
         let i = cyclicYear - 1
         return Self.heavenlyStems[i % 10] + Self.earthlyBranches[i % 12]
     }
 
     /// e.g. "马"
-    var zodiac: String { Self.zodiacAnimals[(cyclicYear - 1) % 12] }
+    public var zodiac: String { Self.zodiacAnimals[(cyclicYear - 1) % 12] }
 
     /// e.g. "闰五月"
-    var monthName: String {
+    public var monthName: String {
         (isLeapMonth ? "闰" : "") + Self.monthNames[month - 1] + "月"
     }
 
     /// e.g. "十一"
-    var dayName: String { Self.dayNames[day - 1] }
+    public var dayName: String { Self.dayNames[day - 1] }
 
     /// What a calendar cell shows when there is no festival or solar term:
     /// the month name on the first day, otherwise the day name.
-    var cellLabel: String { day == 1 ? monthName : dayName }
+    public var cellLabel: String { day == 1 ? monthName : dayName }
 
     /// e.g. "丙午年 八月十一"
-    var fullDescription: String {
+    public var fullDescription: String {
         "\(stemBranch)年 \(monthName)\(dayName)"
     }
 
     /// 除夕 — the last day of the twelfth month.
-    var isNewYearsEve: Bool { month == 12 && !isLeapMonth && day == daysInMonth }
+    public var isNewYearsEve: Bool { month == 12 && !isLeapMonth && day == daysInMonth }
 
     /// 春节 — the first day of the first month.
-    var isSpringFestival: Bool { month == 1 && !isLeapMonth && day == 1 }
+    public var isSpringFestival: Bool { month == 1 && !isLeapMonth && day == 1 }
 }
 
-enum LunarConverter {
+public enum LunarConverter {
     /// UTC+8 as a fixed offset — deliberately not `Asia/Shanghai`.
     ///
     /// Both the lunisolar calendar and the solar terms are defined against the
@@ -67,7 +67,7 @@ enum LunarConverter {
     /// pre-1928 Shanghai local mean time, which shift a term by an hour and can
     /// push one across midnight into the wrong day — 1990's 夏至, for instance,
     /// lands at 23:32 standard time but 00:32 the next day under DST.
-    static let timeZone = TimeZone(secondsFromGMT: 8 * 3600) ?? .current
+    public static let timeZone = TimeZone(secondsFromGMT: 8 * 3600) ?? .current
 
     private static let chinese: Calendar = {
         var c = Calendar(identifier: .chinese)
@@ -83,7 +83,7 @@ enum LunarConverter {
     /// say — gives the wrong day whenever the host is west of China and the
     /// instant is near midnight. Convert such instants through a UTC+8
     /// calendar instead.
-    static func lunarDate(from date: Date) -> LunarDate {
+    public static func lunarDate(from date: Date) -> LunarDate {
         let noon = normalizedToNoon(date)
         let c = chinese.dateComponents([.year, .month, .day, .isLeapMonth], from: noon)
         let days = chinese.range(of: .day, in: .month, for: noon)?.count ?? 30

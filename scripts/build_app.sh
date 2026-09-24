@@ -69,7 +69,7 @@ find "$BUNDLE_SEARCH_DIR" -maxdepth 1 -name "${APP_NAME}_*.bundle" -exec \
 
 # A plain copy as well, so the app still finds the data via Bundle.main if the
 # resource bundle is ever stripped.
-cp "$ROOT/Sources/MenuBarCalendar/Resources/holidays.json" "$CONTENTS/Resources/"
+cp "$ROOT/Sources/CalendarCore/Resources/holidays.json" "$CONTENTS/Resources/"
 
 # ---------------------------------------------------------------- icon
 ICON_SRC="$ROOT/Resources/AppIcon.icns"

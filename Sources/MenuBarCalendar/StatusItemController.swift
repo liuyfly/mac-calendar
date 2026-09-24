@@ -1,4 +1,5 @@
 import AppKit
+import CalendarCore
 import SwiftUI
 
 /// Owns the status bar item, the calendar panel and the settings window.
