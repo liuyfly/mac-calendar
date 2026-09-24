@@ -1,7 +1,7 @@
 import Foundation
 
 /// Statutory status of a single day.
-enum HolidayStatus: Equatable {
+public enum HolidayStatus: Equatable {
     /// A mandated day off (放假).
     case off(name: String)
     /// A make-up working day that falls on a weekend (调休补班).
@@ -31,8 +31,8 @@ private struct CachedYear: Codable {
 /// preceding year, so the bundled table always goes stale. Lookups fall back
 /// through: downloaded cache → bundled file → no data (cells simply show no
 /// badge, rather than guessing).
-final class HolidayStore {
-    static let shared = HolidayStore()
+public final class HolidayStore {
+    public static let shared = HolidayStore()
 
     /// `{year: {"yyyy-MM-dd": status}}`
     private var table: [Int: [String: HolidayStatus]] = [:]
@@ -47,7 +47,7 @@ final class HolidayStore {
 
     // MARK: - Lookup
 
-    func status(for date: Date) -> HolidayStatus? {
+    public func status(for date: Date) -> HolidayStatus? {
         guard let (year, key) = Self.key(for: date) else { return nil }
         lock.lock()
         defer { lock.unlock() }
@@ -65,7 +65,7 @@ final class HolidayStore {
     }
 
     /// Years the store currently has data for.
-    var availableYears: [Int] {
+    public var availableYears: [Int] {
         lock.lock(); defer { lock.unlock() }
         return table.keys.sorted()
     }
@@ -78,7 +78,7 @@ final class HolidayStore {
         merge(feedData: data)
     }
 
-    private static let resourceBundleName = "MenuBarCalendar_MenuBarCalendar.bundle"
+    private static let resourceBundleName = "MenuBarCalendar_CalendarCore.bundle"
 
     /// Finds `holidays.json` across the three ways this code runs: the packaged
     /// `.app`, a plain SwiftPM build, and the standalone test runner.
@@ -169,7 +169,7 @@ final class HolidayStore {
     /// the bundled data, and a year with no data shows no badge rather than a
     /// guessed one.
     /// - Parameter force: skips the throttle, for the button in preferences.
-    func refreshFromRemote(sources: [HolidayFeedSource] = HolidayFeedSource.defaults,
+    public func refreshFromRemote(sources: [HolidayFeedSource] = HolidayFeedSource.defaults,
                            force: Bool = false,
                            completion: (([Int]) -> Void)? = nil) {
         // The arrangement changes once a year. Checking on every launch mostly

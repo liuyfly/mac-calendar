@@ -1,3 +1,4 @@
+import CalendarCore
 import SwiftUI
 
 struct CalendarPanelView: View {
@@ -7,8 +8,7 @@ struct CalendarPanelView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            weekdayRow
-            grid
+            MonthGridView(model: model)
             Divider()
             footer
         }
@@ -62,45 +62,6 @@ struct CalendarPanelView: View {
         .buttonStyle(.plain)
         .foregroundStyle(.secondary)
         .help(help)
-    }
-
-    // MARK: - Grid
-
-    private var weekdayRow: some View {
-        HStack(spacing: 1) {
-            ForEach(Array(model.month.weekdaySymbols.enumerated()), id: \.offset) { index, symbol in
-                Text(symbol)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(isWeekendColumn(index) ? Color.red.opacity(0.75) : .secondary)
-                    .frame(maxWidth: .infinity)
-            }
-        }
-        .padding(.horizontal, 8)
-        .padding(.bottom, 4)
-    }
-
-    private func isWeekendColumn(_ index: Int) -> Bool {
-        Preferences.shared.weekStartsOnMonday ? index >= 5 : (index == 0 || index == 6)
-    }
-
-    private var grid: some View {
-        VStack(spacing: 1) {
-            ForEach(0..<CalendarMonth.rowCount, id: \.self) { row in
-                HStack(spacing: 1) {
-                    ForEach(0..<CalendarMonth.columnCount, id: \.self) { column in
-                        let index = row * CalendarMonth.columnCount + column
-                        if index < model.month.days.count {
-                            let day = model.month.days[index]
-                            DayCellView(day: day, isSelected: model.isSelected(day)) {
-                                model.select(day)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 8)
-        .padding(.bottom, 8)
     }
 
     // MARK: - Footer

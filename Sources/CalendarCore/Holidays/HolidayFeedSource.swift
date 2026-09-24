@@ -5,10 +5,10 @@ import Foundation
 /// This matches holiday-cn's schema, which every source is normalised into
 /// before it is cached, so the cache format does not depend on which source
 /// happened to answer.
-struct HolidayDay: Codable, Equatable {
-    let date: String        // yyyy-MM-dd
-    let isOffDay: Bool
-    let name: String
+public struct HolidayDay: Codable, Equatable {
+    public let date: String        // yyyy-MM-dd
+    public let isOffDay: Bool
+    public let name: String
 }
 
 /// A remote publisher of China's statutory holiday arrangement.
@@ -17,14 +17,14 @@ struct HolidayDay: Codable, Equatable {
 /// document whichever project republishes it, so a fallback is about
 /// availability — a repository going away, an npm release lagging, a CDN being
 /// unreachable — not about preferring one project's numbers over another's.
-struct HolidayFeedSource {
-    let name: String
+public struct HolidayFeedSource {
+    public let name: String
     /// `{year}` is substituted.
-    let urlTemplate: String
+    public let urlTemplate: String
     /// Returns nil when the payload does not parse or carries no days.
-    let parse: (Data, Int) -> [HolidayDay]?
+    public let parse: (Data, Int) -> [HolidayDay]?
 
-    func url(for year: Int) -> URL? {
+    public func url(for year: Int) -> URL? {
         URL(string: urlTemplate.replacingOccurrences(of: "{year}", with: String(year)))
     }
 
@@ -36,7 +36,7 @@ struct HolidayFeedSource {
     /// served directly from the repository, so a commit is live immediately
     /// rather than waiting on an npm release. It is listed twice, on two CDNs,
     /// because jsDelivr has been unreachable from mainland China before.
-    static let defaults: [HolidayFeedSource] = [
+    public static let defaults: [HolidayFeedSource] = [
         holidayCN(name: "holiday-cn (jsDelivr)",
                   template: "https://cdn.jsdelivr.net/gh/NateScarlet/holiday-cn@master/{year}.json"),
         holidayCN(name: "holiday-cn (raw.githubusercontent)",

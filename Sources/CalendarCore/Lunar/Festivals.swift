@@ -1,8 +1,8 @@
 import Foundation
 
 /// A named day worth showing in place of the plain lunar date.
-struct Festival: Equatable {
-    enum Kind {
+public struct Festival: Equatable {
+    public enum Kind {
         /// Lunar-calendar festivals: 春节, 中秋 …
         case lunar
         /// Fixed Gregorian dates: 元旦, 国庆节 …
@@ -10,13 +10,13 @@ struct Festival: Equatable {
         /// Nth-weekday-of-month festivals: 母亲节, 父亲节 …
         case floating
     }
-    let name: String
-    let kind: Kind
+    public let name: String
+    public let kind: Kind
     /// Major festivals outrank minor ones when several land on the same day.
-    let isMajor: Bool
+    public let isMajor: Bool
 }
 
-enum Festivals {
+public enum Festivals {
 
     // MARK: - Tables
 
@@ -67,7 +67,7 @@ enum Festivals {
     // MARK: - Lookup
 
     /// Every festival falling on `date`, most important first.
-    static func festivals(on date: Date, lunar: LunarDate) -> [Festival] {
+    public static func festivals(on date: Date, lunar: LunarDate) -> [Festival] {
         var found: [Festival] = []
 
         // 除夕 is not a fixed lunar date — the twelfth month may end on the

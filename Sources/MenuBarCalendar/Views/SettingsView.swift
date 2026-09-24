@@ -1,3 +1,4 @@
+import CalendarCore
 import SwiftUI
 
 struct SettingsView: View {

@@ -1,12 +1,12 @@
 import Foundation
 
 /// One of the 24 solar terms (节气).
-struct SolarTerm: Equatable {
-    let name: String
+public struct SolarTerm: Equatable {
+    public let name: String
     /// Apparent solar longitude that defines the term, in degrees.
-    let longitude: Double
+    public let longitude: Double
     /// The instant the sun reaches `longitude`, in Asia/Shanghai.
-    let date: Date
+    public let date: Date
 }
 
 /// Solar term calculation via a truncated VSOP87D series for Earth's
@@ -18,23 +18,23 @@ struct SolarTerm: Equatable {
 /// The low-accuracy formula in Meeus ch. 25 is good to ~0.01° (~14 minutes of
 /// solar motion) and would be a coin flip there. This series is good to ~1″
 /// (~25 seconds), which keeps the day assignment unambiguous.
-enum SolarTerms {
+public enum SolarTerms {
 
     /// Traditional order, starting from 小寒 — the first term of the Gregorian year.
-    static let names = [
+    public static let names = [
         "小寒","大寒","立春","雨水","惊蛰","春分","清明","谷雨",
         "立夏","小满","芒种","夏至","小暑","大暑","立秋","处暑",
         "白露","秋分","寒露","霜降","立冬","小雪","大雪","冬至",
     ]
 
     /// Apparent solar longitude for each term, matching `names`.
-    static let longitudes: [Double] = (0..<24).map { Double(($0 * 15 + 285) % 360) }
+    public static let longitudes: [Double] = (0..<24).map { Double(($0 * 15 + 285) % 360) }
 
     // MARK: - Public API
 
     /// All 24 terms falling inside the given Gregorian year, in chronological order.
     /// Results are cached per year; the series is far too heavy to run per cell.
-    static func terms(inYear year: Int) -> [SolarTerm] {
+    public static func terms(inYear year: Int) -> [SolarTerm] {
         cacheLock.lock()
         defer { cacheLock.unlock() }
         if let cached = cache[year] { return cached }
@@ -50,7 +50,7 @@ enum SolarTerms {
     }
 
     /// The term falling on `date`, if any.
-    static func term(on date: Date) -> SolarTerm? {
+    public static func term(on date: Date) -> SolarTerm? {
         var local = Calendar(identifier: .gregorian)
         local.timeZone = .current
         let ymd = local.dateComponents([.year, .month, .day], from: date)

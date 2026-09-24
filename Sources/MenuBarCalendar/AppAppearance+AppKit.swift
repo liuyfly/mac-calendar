@@ -1,19 +1,7 @@
 import AppKit
+import CalendarCore
 
-/// How this app's own windows are themed, independently of the system setting.
-enum AppAppearance: String, CaseIterable {
-    case system
-    case light
-    case dark
-
-    var label: String {
-        switch self {
-        case .system: return "跟随系统"
-        case .light: return "浅色"
-        case .dark: return "深色"
-        }
-    }
-
+extension AppAppearance {
     /// `nil` hands the decision back to the system.
     var nsAppearance: NSAppearance? {
         switch self {

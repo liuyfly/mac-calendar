@@ -1,23 +1,23 @@
 import Foundation
 
 /// Everything one calendar cell needs to render itself.
-struct DayInfo: Identifiable {
-    let id: Date
-    let date: Date
-    let gregorianDay: Int
-    let weekday: Int          // 1 = Sunday
-    let lunar: LunarDate
-    let solarTerm: SolarTerm?
-    let festivals: [Festival]
-    let holidayStatus: HolidayStatus?
+public struct DayInfo: Identifiable {
+    public let id: Date
+    public let date: Date
+    public let gregorianDay: Int
+    public let weekday: Int          // 1 = Sunday
+    public let lunar: LunarDate
+    public let solarTerm: SolarTerm?
+    public let festivals: [Festival]
+    public let holidayStatus: HolidayStatus?
     /// False for the leading/trailing days borrowed from adjacent months.
-    let isInDisplayedMonth: Bool
-    let isToday: Bool
+    public let isInDisplayedMonth: Bool
+    public let isToday: Bool
 
-    var isWeekend: Bool { weekday == 1 || weekday == 7 }
+    public var isWeekend: Bool { weekday == 1 || weekday == 7 }
 
     /// What the secondary line shows, and how it should be coloured.
-    enum Subtitle: Equatable {
+    public enum Subtitle: Equatable {
         case festival(String)
         case solarTerm(String)
         case lunar(String)
@@ -25,7 +25,7 @@ struct DayInfo: Identifiable {
 
     /// Priority: festival > solar term > lunar date. 清明 is both a term and a
     /// statutory festival, and reads better in the festival colour.
-    var subtitle: Subtitle {
+    public var subtitle: Subtitle {
         if let festival = festivals.first(where: { $0.isMajor }) {
             return .festival(festival.name)
         }
@@ -42,7 +42,7 @@ struct DayInfo: Identifiable {
     }
 
     /// Line shown at the bottom of the popover for the selected day.
-    var detailLine: String {
+    public var detailLine: String {
         var parts = [lunar.fullDescription]
         if let term = solarTerm { parts.append(term.name) }
         let names = festivals.map(\.name)
