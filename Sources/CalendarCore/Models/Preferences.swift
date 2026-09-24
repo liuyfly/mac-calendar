@@ -12,6 +12,7 @@ public final class Preferences: ObservableObject {
         static let weekStartsOnMonday = "weekStartsOnMonday"
         static let showSolarTerms = "showSolarTerms"
         static let showHolidayBadges = "showHolidayBadges"
+        static let showAgenda = "showAgenda"
         static let holidayDataUpdatedAt = "holidayDataUpdatedAt"
     }
 
@@ -56,6 +57,7 @@ public final class Preferences: ObservableObject {
             Key.weekStartsOnMonday: true,
             Key.showSolarTerms: true,
             Key.showHolidayBadges: true,
+            Key.showAgenda: true,
         ])
     }
 
@@ -99,6 +101,12 @@ public final class Preferences: ObservableObject {
     public var showHolidayBadges: Bool {
         get { defaults.bool(forKey: Key.showHolidayBadges) }
         set { defaults.set(newValue, forKey: Key.showHolidayBadges); bump() }
+    }
+
+    /// Shows event and reminder counts in the grid and the focused day's list.
+    public var showAgenda: Bool {
+        get { defaults.bool(forKey: Key.showAgenda) }
+        set { defaults.set(newValue, forKey: Key.showAgenda); bump() }
     }
 
     public var holidayDataUpdatedAt: Date? {
