@@ -106,6 +106,37 @@ dist/MenuBarCalendar.app/Contents/MacOS/MenuBarCalendar --show-on-launch
 Opens the calendar immediately instead of waiting for a click, which makes the
 panel easy to screenshot.
 
+## Web app (iPhone)
+
+`web/` is the same calendar as a static page, for an iPhone without a paid
+developer account: a free provisioning profile expires every 7 days, while a
+page saved to the home screen never does. Open it in Safari, then Share → Add
+to Home Screen; it runs full screen, offline, with its own icon.
+
+```sh
+./scripts/build_web.sh --serve   # build into dist/web and serve on :8080
+cd web && npm test               # unit tests, Node 22+ (no dependencies)
+```
+
+Pushes to `main` that touch `web/` are tested and deployed to GitHub Pages by
+`.github/workflows/web.yml` (Settings → Pages → Source: GitHub Actions).
+
+It is a port of `CalendarCore`, not a wrapper around it:
+
+- **Lunar dates** come from `web/core/lunar-table.js`, generated from
+  Foundation by `swift scripts/make_lunar_table.swift`. The browser's own
+  `Intl` Chinese calendar is not used: ICU builds disagree, and Chrome and
+  Node (ICU 78) put 2027's Spring Festival on 7 February instead of 6. The
+  table matches Foundation on every day from 1900 to 2100, except two dates
+  where ICU itself reports a "day 0" (2057-09-28, 2097-08-07).
+- **Solar terms** are the same VSOP87D series, ported line for line; all 4824
+  terms from 1900 to 2100 match the Swift results to the millisecond.
+- **Holidays** use the bundled `holidays.json` and the same three feeds, all of
+  which allow cross-origin reads. Downloads are kept in `localStorage`.
+- **Offline**: `web/sw.js` caches every file under the build's version; a new
+  build replaces the cache. `build_web.sh` fails if a file is missing from its
+  list.
+
 ## Data sources
 
 ### Solar terms — computed, not fetched
