@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>农历日历</title>
+  <meta name="description" content="公历、农历、24 节气与法定节假日月历">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="农历日历">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main class="screen">
+    <header class="header">
+      <div class="titles">
+        <h1 id="month-title" class="month-title"></h1>
+        <p id="month-subtitle" class="month-subtitle"></p>
+      </div>
+      <nav class="controls">
+        <button id="prev" class="icon-button" type="button" aria-label="上个月">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button id="today" class="text-button" type="button">今天</button>
+        <button id="next" class="icon-button" type="button" aria-label="下个月">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button id="open-settings" class="icon-button" type="button" aria-label="设置">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <div id="weekdays" class="weekdays" aria-hidden="true"></div>
+    <div id="pages" class="pages">
+      <div id="track" class="track"></div>
+    </div>
+
+    <hr class="divider">
+    <section class="footer" aria-live="polite">
+      <h2 id="footer-title" class="footer-title"></h2>
+      <p id="footer-detail" class="footer-detail"></p>
+    </section>
+  </main>
+
+  <div id="settings" class="sheet-layer" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <header class="sheet-header">
+        <h2 id="settings-title">设置</h2>
+        <button class="text-button done" type="button" data-close>完成</button>
+      </header>
+      <div class="sheet-body">
+        <h3 class="group-title">显示</h3>
+        <div class="group">
+          <div class="row">
+            <span>外观</span>
+            <div class="segmented" data-pref="appearance">
+              <button type="button" data-value="system">跟随系统</button>
+              <button type="button" data-value="light">浅色</button>
+              <button type="button" data-value="dark">深色</button>
+            </div>
+          </div>
+          <div class="row">
+            <span>每周起始日</span>
+            <div class="segmented" data-pref="weekStartsOnMonday">
+              <button type="button" data-value="true">周一</button>
+              <button type="button" data-value="false">周日</button>
+            </div>
+          </div>
+          <label class="row">
+            <span>显示 24 节气</span>
+            <input class="switch" type="checkbox" data-pref="showSolarTerms">
+          </label>
+          <label class="row">
+            <span>显示法定节假日 / 调休</span>
+            <input class="switch" type="checkbox" data-pref="showHolidayBadges">
+          </label>
+        </div>
+
+        <h3 class="group-title">节假日数据</h3>
+        <div class="group">
+          <button id="refresh-holidays" class="row row-button" type="button">检查更新</button>
+        </div>
+        <p id="holiday-status" class="group-footer"></p>
+
+        <div id="install-hint" hidden>
+          <h3 class="group-title">安装到主屏幕</h3>
+          <div class="group">
+            <p class="row row-text">在 Safari 中点「分享」→「添加到主屏幕」，之后就能像 app 一样从桌面打开，离线也能用。</p>
+          </div>
+        </div>
+
+        <div class="group about">
+          <div class="row"><span>版本</span><span id="version" class="secondary"></span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
