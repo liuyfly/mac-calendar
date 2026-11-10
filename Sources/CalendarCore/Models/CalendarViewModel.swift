@@ -4,10 +4,19 @@ import Combine
 /// Drives the popover: which month is on screen, which day is selected, and the
 /// footer text.
 public final class CalendarViewModel: ObservableObject {
-    @Published public private(set) var month: CalendarMonth
+    @Published public private(set) var month: CalendarMonth {
+        didSet { refreshAgenda() }
+    }
     @Published public private(set) var selectedDate: Date?
+    /// Events and reminders for the days on screen, keyed by the local start
+    /// of each day. Empty when there is no provider or the feature is off.
+    @Published public private(set) var agenda: [Date: [AgendaItem]] = [:]
 
     private var today: Date
+    private let agendaProvider: AgendaProvider?
+    /// Incremented per fetch, so a slow answer for a month the user has
+    /// already paged past cannot overwrite the current one.
+    private var agendaGeneration = 0
 
     private let calendar: Calendar = {
         var c = Calendar(identifier: .gregorian)
@@ -15,9 +24,12 @@ public final class CalendarViewModel: ObservableObject {
         return c
     }()
 
-    public init(today: Date = Date()) {
+    public init(today: Date = Date(), agendaProvider: AgendaProvider? = nil) {
         self.today = today
+        self.agendaProvider = agendaProvider
         self.month = .current(today: today)
+        // `didSet` does not run during initialisation.
+        refreshAgenda()
     }
 
     // MARK: - Navigation
@@ -71,6 +83,51 @@ public final class CalendarViewModel: ObservableObject {
         guard let selected = selectedDate else { return false }
         return sameDay(selected, day.date)
     }
+
+    // MARK: - Agenda
+
+    /// Refetches the agenda for the visible grid. Called whenever the grid is
+    /// rebuilt, and by the app when the calendar database changes.
+    public func refreshAgenda() {
+        agendaGeneration &+= 1
+        let generation = agendaGeneration
+
+        guard let provider = agendaProvider,
+              Preferences.shared.showAgenda,
+              let first = month.days.first?.date,
+              let last = month.days.last?.date,
+              let end = calendar.date(byAdding: .day, value: 1,
+                                      to: calendar.startOfDay(for: last)) else {
+            if !agenda.isEmpty { agenda = [:] }
+            return
+        }
+        let start = calendar.startOfDay(for: first)
+        let calendar = self.calendar
+
+        provider.fetchItems(from: start, to: end) { [weak self] items in
+            let grouped = AgendaIndex.byDay(items, from: start, to: end, calendar: calendar)
+            let apply = {
+                guard let self, self.agendaGeneration == generation else { return }
+                self.agenda = grouped
+            }
+            // A provider that answers synchronously on the main thread (the
+            // tests' fake) applies at once; EventKit answers on its own queue.
+            if Thread.isMainThread { apply() } else { DispatchQueue.main.async(execute: apply) }
+        }
+    }
+
+    public func agendaItems(on date: Date) -> [AgendaItem] {
+        agenda[calendar.startOfDay(for: date)] ?? []
+    }
+
+    /// Items for the day the footer describes.
+    public var focusedAgenda: [AgendaItem] {
+        guard let day = focusedDay else { return [] }
+        return agendaItems(on: day.date)
+    }
+
+    /// The day `focusedAgenda` belongs to, for labelling times.
+    public var focusedDate: Date? { focusedDay?.date }
 
     // MARK: - Footer
 

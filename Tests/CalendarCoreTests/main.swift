@@ -12,5 +12,6 @@ runPreferenceTests()
 runViewModelTests()
 runHolidayFeedTests()
 runLeapMonthConsistencyTests()
+runAgendaTests()
 
 exit(TestRunner.report())

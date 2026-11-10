@@ -1,4 +1,5 @@
 import CalendarCore
+import EventKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -11,6 +12,9 @@ struct SettingsView: View {
     @State private var weekStartsOnMonday = Preferences.shared.weekStartsOnMonday
     @State private var showSolarTerms = Preferences.shared.showSolarTerms
     @State private var showHolidayBadges = Preferences.shared.showHolidayBadges
+    @State private var showAgenda = Preferences.shared.showAgenda
+    /// Bumped after an access request so the status line re-reads it.
+    @State private var accessRevision = 0
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var refreshMessage: String?
 
@@ -44,6 +48,14 @@ struct SettingsView: View {
                     .onChange(of: showHolidayBadges) { _, new in
                         Preferences.shared.showHolidayBadges = new
                     }
+                Toggle("显示日历与提醒事项", isOn: $showAgenda)
+                    .onChange(of: showAgenda) { _, new in
+                        Preferences.shared.showAgenda = new
+                        if new { requestAgendaAccess() }
+                    }
+                if showAgenda {
+                    agendaAccessRow
+                }
                 Toggle("登录时自动启动", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, new in
                         // Reverting on failure keeps the switch honest: an
@@ -146,6 +158,58 @@ struct SettingsView: View {
                 }
             }
             .controlSize(.small)
+        }
+    }
+
+    private var agendaAccessRow: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(agendaAccessSummary)
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+                .id(accessRevision)
+            Spacer()
+            if needsAgendaAction {
+                Button(anyUndetermined ? "授权" : "打开系统设置") {
+                    if anyUndetermined {
+                        requestAgendaAccess()
+                    } else {
+                        let type: EKEntityType =
+                            EventKitAgendaProvider.access(for: .event) == .granted ? .reminder : .event
+                        EventKitAgendaProvider.openPrivacySettings(for: type)
+                    }
+                }
+                .controlSize(.small)
+            }
+        }
+    }
+
+    private var agendaAccessSummary: String {
+        func label(_ access: EventKitAgendaProvider.Access) -> String {
+            switch access {
+            case .granted: return "已授权"
+            case .denied: return "未授权"
+            case .notDetermined: return "待授权"
+            case .unavailable: return "不可用"
+            }
+        }
+        return "日历：\(label(EventKitAgendaProvider.access(for: .event)))"
+            + " · 提醒事项：\(label(EventKitAgendaProvider.access(for: .reminder)))"
+    }
+
+    private var anyUndetermined: Bool {
+        EventKitAgendaProvider.access(for: .event) == .notDetermined
+            || EventKitAgendaProvider.access(for: .reminder) == .notDetermined
+    }
+
+    private var needsAgendaAction: Bool {
+        let states = [EventKitAgendaProvider.access(for: .event),
+                      EventKitAgendaProvider.access(for: .reminder)]
+        return states.contains(.notDetermined) || states.contains(.denied)
+    }
+
+    private func requestAgendaAccess() {
+        EventKitAgendaProvider.shared.requestAccessIfNeeded {
+            accessRevision &+= 1
         }
     }
 

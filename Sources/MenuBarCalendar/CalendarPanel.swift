@@ -76,6 +76,21 @@ final class CalendarPanel: NSPanel {
         invalidateShadow()
     }
 
+    /// Resizes to the content's natural size, keeping the top edge where it is
+    /// so the panel stays attached to the menu bar as it grows or shrinks.
+    func fitContent() {
+        guard let contentView else { return }
+        let size = contentView.fittingSize
+        guard abs(size.height - frame.height) > 0.5 || abs(size.width - frame.width) > 0.5 else {
+            return
+        }
+        var newFrame = frame
+        newFrame.origin.y = frame.maxY - size.height
+        newFrame.size = size
+        setFrame(newFrame, display: true)
+        invalidateShadow()
+    }
+
     /// Escape closes the panel, matching menu behaviour.
     override func cancelOperation(_ sender: Any?) {
         orderOut(nil)

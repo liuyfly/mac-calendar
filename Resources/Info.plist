@@ -26,6 +26,10 @@
 	<string>14.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>在日历格子里显示每天的日程数，并在面板下方列出当天的日程。只读取，不会修改或上传任何数据。</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>在日历格子里显示每天到期的提醒事项数，并在面板下方列出。只读取，不会修改或上传任何数据。</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>MenuBarCalendar</string>
 	<key>NSSupportsAutomaticTermination</key>

@@ -11,6 +11,11 @@ struct CalendarPanelView: View {
             MonthGridView(model: model)
             Divider()
             footer
+            if Preferences.shared.showAgenda, let day = model.focusedDate {
+                AgendaListView(items: model.focusedAgenda,
+                               day: day,
+                               isBlocked: EventKitAgendaProvider.isBlocked)
+            }
         }
         .frame(width: 326)
         .fixedSize(horizontal: false, vertical: true)

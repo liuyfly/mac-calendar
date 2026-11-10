@@ -19,6 +19,7 @@ mkdir -p "$BUILD_DIR"
 SOURCES=(
   "$ROOT/Sources/CalendarCore/Lunar/"*.swift
   "$ROOT/Sources/CalendarCore/Holidays/"*.swift
+  "$ROOT/Sources/CalendarCore/Agenda/"*.swift
   "$ROOT/Sources/CalendarCore/Models/"*.swift
 )
 
@@ -26,6 +27,7 @@ TESTS=(
   "$ROOT/Tests/CalendarCoreTests/TestSupport.swift"
   "$ROOT/Tests/CalendarCoreTests/RoughSolarTerms.swift"
   "$ROOT/Tests/CalendarCoreTests/LunarTests.swift"
+  "$ROOT/Tests/CalendarCoreTests/AgendaTests.swift"
   "$ROOT/Tests/CalendarCoreTests/main.swift"
 )
 
