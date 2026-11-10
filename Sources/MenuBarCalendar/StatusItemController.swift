@@ -49,6 +49,11 @@ final class StatusItemController: NSObject {
         guard let button = statusItem.button else { return }
         let style = Preferences.shared.statusBarStyle
 
+        // An icon alone gets a fixed square slot, so the menu bar never has to
+        // re-measure it; text still needs the variable width.
+        statusItem.length = style.showsText
+            ? NSStatusItem.variableLength
+            : NSStatusItem.squareLength
         button.image = style.showsIcon ? StatusItemIcon.make() : nil
         button.title = style.showsText
             ? StatusBarFormatter.render(template: Preferences.shared.statusBarFormat)
